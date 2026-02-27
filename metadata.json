@@ -1,0 +1,5 @@
+{
+  "name": "ARGB Control Panel",
+  "description": "A mobile-first, interactive Web Control Panel to manage a custom PC ARGB lighting system.",
+  "requestFramePermissions": []
+}

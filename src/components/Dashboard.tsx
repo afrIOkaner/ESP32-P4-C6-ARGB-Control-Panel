@@ -27,6 +27,14 @@ export default function Dashboard({ globalPower }: { globalPower: boolean }) {
   const [rpm, setRpm] = useState(1200);
   const [phase, setPhase] = useState(0);
 
+  // Breathe specific state
+  const [breatheSpeed, setBreatheSpeed] = useState(1.5);
+  const [breatheMinBrightness, setBreatheMinBrightness] = useState(20);
+  const [breatheMaxBrightness, setBreatheMaxBrightness] = useState(100);
+
+  // Rainbow specific state
+  const [rainbowSpeed, setRainbowSpeed] = useState(1.0);
+
   // Debounce API calls
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -49,11 +57,15 @@ export default function Dashboard({ globalPower }: { globalPower: boolean }) {
             flash_color: "#FFFFFF",
           },
           breathe: {
-            speed_multiplier: 1.5,
-            min_brightness: 50,
+            speed_multiplier: breatheSpeed,
+            min_brightness: breatheMinBrightness,
+            max_brightness: breatheMaxBrightness,
           },
           solid: {
             primary_color: themeColor,
+          },
+          rainbow: {
+            speed_multiplier: rainbowSpeed,
           },
         },
       };
@@ -62,7 +74,7 @@ export default function Dashboard({ globalPower }: { globalPower: boolean }) {
     }, 150);
 
     return () => clearTimeout(timer);
-  }, [globalPower, activeMode, activeTheme, brightness, rpm, phase]);
+  }, [globalPower, activeMode, activeTheme, brightness, rpm, phase, breatheSpeed, breatheMinBrightness, breatheMaxBrightness, rainbowSpeed]);
 
   return (
     <div
@@ -155,6 +167,162 @@ export default function Dashboard({ globalPower }: { globalPower: boolean }) {
                 </button>
               );
             })}
+          </div>
+        </section>
+      )}
+
+      {/* Rainbow Tuning Dashboard */}
+      {activeMode === "rainbow" && (
+        <section className="bg-zinc-900/80 border border-indigo-500/20 rounded-3xl p-5 animate-in fade-in slide-in-from-bottom-4 duration-500 relative overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.5)] backdrop-blur-md">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-green-500 to-blue-500 opacity-50" />
+
+          <div className="flex items-center gap-2 mb-6">
+            <Settings2 className="w-5 h-5 text-indigo-400" />
+            <h2 className="text-sm font-medium text-zinc-200">Rainbow Tuning</h2>
+          </div>
+
+          <div className="space-y-6">
+            {/* Rainbow Speed */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-xs font-medium text-zinc-400">
+                  Cycle Speed
+                </label>
+                <div className="flex items-center gap-2 bg-zinc-950 rounded-lg px-2 py-1 border border-zinc-800 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]">
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={rainbowSpeed}
+                    onChange={(e) => setRainbowSpeed(Number(e.target.value))}
+                    className="w-12 bg-transparent text-right text-sm font-mono text-zinc-200 focus:outline-none"
+                  />
+                  <span className="text-xs text-zinc-600 font-mono">x</span>
+                </div>
+              </div>
+              <div className="relative w-full h-3 bg-zinc-950 rounded-full border border-zinc-800/80 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
+                <div
+                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-600 to-indigo-400 rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)]"
+                  style={{ width: `${((rainbowSpeed - 0.1) / 4.9) * 100}%` }}
+                />
+                <input
+                  type="range"
+                  min="0.1"
+                  max="5.0"
+                  step="0.1"
+                  value={rainbowSpeed}
+                  onChange={(e) => setRainbowSpeed(Number(e.target.value))}
+                  className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+                />
+              </div>
+              <div className="flex justify-between mt-2 text-[10px] text-zinc-600 font-mono">
+                <span>0.1x</span>
+                <span>5.0x</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Breathe Tuning Dashboard */}
+      {activeMode === "breathe" && (
+        <section className="bg-zinc-900/80 border border-indigo-500/20 rounded-3xl p-5 animate-in fade-in slide-in-from-bottom-4 duration-500 relative overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.5)] backdrop-blur-md">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 opacity-50" />
+
+          <div className="flex items-center gap-2 mb-6">
+            <Settings2 className="w-5 h-5 text-indigo-400" />
+            <h2 className="text-sm font-medium text-zinc-200">Breathe Tuning</h2>
+          </div>
+
+          <div className="space-y-6">
+            {/* Breathe Speed */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-xs font-medium text-zinc-400">
+                  Breathing Speed
+                </label>
+                <div className="flex items-center gap-2 bg-zinc-950 rounded-lg px-2 py-1 border border-zinc-800 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]">
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={breatheSpeed}
+                    onChange={(e) => setBreatheSpeed(Number(e.target.value))}
+                    className="w-12 bg-transparent text-right text-sm font-mono text-zinc-200 focus:outline-none"
+                  />
+                  <span className="text-xs text-zinc-600 font-mono">x</span>
+                </div>
+              </div>
+              <div className="relative w-full h-3 bg-zinc-950 rounded-full border border-zinc-800/80 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
+                <div
+                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-600 to-indigo-400 rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)]"
+                  style={{ width: `${((breatheSpeed - 0.1) / 4.9) * 100}%` }}
+                />
+                <input
+                  type="range"
+                  min="0.1"
+                  max="5.0"
+                  step="0.1"
+                  value={breatheSpeed}
+                  onChange={(e) => setBreatheSpeed(Number(e.target.value))}
+                  className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+                />
+              </div>
+              <div className="flex justify-between mt-2 text-[10px] text-zinc-600 font-mono">
+                <span>0.1x</span>
+                <span>5.0x</span>
+              </div>
+            </div>
+
+            {/* Min Brightness */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-xs font-medium text-zinc-400">
+                  Min Brightness
+                </label>
+                <span className="text-xs font-mono text-zinc-500">
+                  {breatheMinBrightness}%
+                </span>
+              </div>
+              <div className="relative w-full h-3 bg-zinc-950 rounded-full border border-zinc-800/80 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
+                <div
+                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-zinc-600 to-zinc-400 rounded-full shadow-[0_0_10px_rgba(161,161,170,0.5)]"
+                  style={{ width: `${breatheMinBrightness}%` }}
+                />
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={breatheMinBrightness}
+                  onChange={(e) => setBreatheMinBrightness(Math.min(Number(e.target.value), breatheMaxBrightness - 5))}
+                  className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+                />
+              </div>
+            </div>
+
+            {/* Max Brightness */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-xs font-medium text-zinc-400">
+                  Max Brightness
+                </label>
+                <span className="text-xs font-mono text-zinc-500">
+                  {breatheMaxBrightness}%
+                </span>
+              </div>
+              <div className="relative w-full h-3 bg-zinc-950 rounded-full border border-zinc-800/80 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
+                <div
+                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-zinc-400 to-zinc-200 rounded-full shadow-[0_0_10px_rgba(228,228,231,0.5)]"
+                  style={{ width: `${breatheMaxBrightness}%` }}
+                />
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={breatheMaxBrightness}
+                  onChange={(e) => setBreatheMaxBrightness(Math.max(Number(e.target.value), breatheMinBrightness + 5))}
+                  className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+                />
+              </div>
+            </div>
           </div>
         </section>
       )}

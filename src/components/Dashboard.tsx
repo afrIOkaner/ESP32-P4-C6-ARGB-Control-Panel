@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Settings2, Zap, Palette, Sun, RefreshCw } from "lucide-react";
-import { sendLedState } from "../lib/api";
+import { sendState } from "../lib/api";
 
 const MODES = [
   { id: "solid", label: "Solid", icon: Sun },
@@ -30,24 +30,35 @@ export default function Dashboard({ globalPower }: { globalPower: boolean }) {
   // Debounce API calls
   useEffect(() => {
     const timer = setTimeout(() => {
-      const payload: any = {
-        power: globalPower,
-        mode: activeMode,
-        brightness,
+      const activeThemeData = THEMES.find((t) => t.id === activeTheme);
+      const themeColor = activeThemeData?.color || "#00FFCC";
+
+      const payload = {
+        system: {
+          power_on: globalPower,
+          global_brightness: Math.round((brightness / 100) * 255),
+          active_mode: activeMode,
+          active_theme: activeThemeData?.id || "neon",
+        },
+        effect_settings: {
+          strobe: {
+            target_rpm: rpm,
+            phase_offset_degrees: phase,
+            pulse_width_us: 1200,
+            base_color: themeColor,
+            flash_color: "#FFFFFF",
+          },
+          breathe: {
+            speed_multiplier: 1.5,
+            min_brightness: 50,
+          },
+          solid: {
+            primary_color: themeColor,
+          },
+        },
       };
 
-      if (activeMode === "solid" || activeMode === "breathe") {
-        payload.color = THEMES.find((t) => t.id === activeTheme)?.color;
-      }
-
-      if (activeMode === "strobe") {
-        payload.strobe = {
-          rpm,
-          phase,
-        };
-      }
-
-      sendLedState(payload);
+      sendState(payload);
     }, 150);
 
     return () => clearTimeout(timer);

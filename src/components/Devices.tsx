@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Cpu, Trash2, Save } from "lucide-react";
+import { sendConfig } from "../lib/api";
 
-interface Device {
-  id: string;
+interface Channel {
+  channel_id: number;
   name: string;
-  gpio: number;
-  ledCount: number;
+  gpio_pin: number;
+  led_count: number;
+  color_order: string;
+  is_active: boolean;
 }
 
 export default function Devices() {
-  const [devices, setDevices] = useState<Device[]>([
-    { id: "1", name: "CPU Block", gpio: 4, ledCount: 12 },
-    { id: "2", name: "Top Fans", gpio: 5, ledCount: 36 },
+  const [channels, setChannels] = useState<Channel[]>([
+    { channel_id: 1, name: "TEUCER FH-11 Hub", gpio_pin: 16, led_count: 50, color_order: "GRB", is_active: true },
+    { channel_id: 2, name: "CPU Cooler", gpio_pin: 17, led_count: 24, color_order: "RGB", is_active: false },
   ]);
 
   const [isAdding, setIsAdding] = useState(false);
@@ -22,15 +25,17 @@ export default function Devices() {
   const handleAddDevice = () => {
     if (!newName || newGpio === "" || newLedCount === "") return;
 
-    const newDevice: Device = {
-      id: Date.now().toString(),
+    const newChannel: Channel = {
+      channel_id: channels.length > 0 ? Math.max(...channels.map(c => c.channel_id)) + 1 : 1,
       name: newName,
-      gpio: Number(newGpio),
-      ledCount: Number(newLedCount),
+      gpio_pin: Number(newGpio),
+      led_count: Number(newLedCount),
+      color_order: "GRB",
+      is_active: true,
     };
 
-    const updatedDevices = [...devices, newDevice];
-    setDevices(updatedDevices);
+    const updatedChannels = [...channels, newChannel];
+    setChannels(updatedChannels);
 
     // Reset form
     setNewName("");
@@ -39,29 +44,21 @@ export default function Devices() {
     setIsAdding(false);
 
     // Send to API
-    saveDevices(updatedDevices);
+    saveConfig(updatedChannels);
   };
 
-  const handleDelete = (id: string) => {
-    const updatedDevices = devices.filter((d) => d.id !== id);
-    setDevices(updatedDevices);
-    saveDevices(updatedDevices);
+  const handleDelete = (id: number) => {
+    const updatedChannels = channels.filter((c) => c.channel_id !== id);
+    setChannels(updatedChannels);
+    saveConfig(updatedChannels);
   };
 
-  const saveDevices = async (deviceList: Device[]) => {
-    try {
-      console.log(
-        "Saving devices to ESP32:",
-        JSON.stringify(deviceList, null, 2),
-      );
-      // const response = await fetch('/api/led/devices', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(deviceList),
-      // });
-    } catch (error) {
-      console.error("Failed to save devices:", error);
-    }
+  const saveConfig = async (channelList: Channel[]) => {
+    const payload = {
+      device_id: "esp32_argb_node_01",
+      channels: channelList,
+    };
+    await sendConfig(payload);
   };
 
   return (
@@ -109,7 +106,7 @@ export default function Devices() {
                 onChange={(e) =>
                   setNewGpio(e.target.value ? Number(e.target.value) : "")
                 }
-                placeholder="e.g. 4"
+                placeholder="e.g. 16"
                 className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm text-zinc-200 focus:outline-none focus:border-indigo-500/50 transition-colors font-mono"
               />
             </div>
@@ -123,7 +120,7 @@ export default function Devices() {
                 onChange={(e) =>
                   setNewLedCount(e.target.value ? Number(e.target.value) : "")
                 }
-                placeholder="e.g. 24"
+                placeholder="e.g. 50"
                 className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm text-zinc-200 focus:outline-none focus:border-indigo-500/50 transition-colors font-mono"
               />
             </div>
@@ -142,9 +139,9 @@ export default function Devices() {
 
       {/* Device List */}
       <div className="space-y-3">
-        {devices.map((device) => (
+        {channels.map((channel) => (
           <div
-            key={device.id}
+            key={channel.channel_id}
             className="bg-zinc-900/50 border border-zinc-800/50 rounded-2xl p-4 flex items-center justify-between group hover:border-zinc-700 transition-colors"
           >
             <div className="flex items-center gap-4">
@@ -153,17 +150,17 @@ export default function Devices() {
               </div>
               <div>
                 <h3 className="text-sm font-medium text-zinc-200">
-                  {device.name}
+                  {channel.name}
                 </h3>
                 <div className="flex items-center gap-3 mt-1 text-xs font-mono text-zinc-500">
-                  <span>Pin: {device.gpio}</span>
+                  <span>Pin: {channel.gpio_pin}</span>
                   <span className="w-1 h-1 rounded-full bg-zinc-700" />
-                  <span>LEDs: {device.ledCount}</span>
+                  <span>LEDs: {channel.led_count}</span>
                 </div>
               </div>
             </div>
             <button
-              onClick={() => handleDelete(device.id)}
+              onClick={() => handleDelete(channel.channel_id)}
               className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-colors"
             >
               <Trash2 className="w-4 h-4" />
@@ -171,7 +168,7 @@ export default function Devices() {
           </div>
         ))}
 
-        {devices.length === 0 && (
+        {channels.length === 0 && (
           <div className="text-center py-12 border border-dashed border-zinc-800 rounded-3xl">
             <Cpu className="w-8 h-8 text-zinc-700 mx-auto mb-3" />
             <p className="text-sm text-zinc-500">No devices configured.</p>

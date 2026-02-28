@@ -35,12 +35,12 @@ export default function Dashboard({ globalPower }: { globalPower: boolean }) {
   // Rainbow specific state
   const [rainbowSpeed, setRainbowSpeed] = useState(1.0);
 
+  const activeThemeData = THEMES.find((t) => t.id === activeTheme);
+  const themeColor = activeThemeData?.color || "#00FFCC";
+
   // Debounce API calls
   useEffect(() => {
     const timer = setTimeout(() => {
-      const activeThemeData = THEMES.find((t) => t.id === activeTheme);
-      const themeColor = activeThemeData?.color || "#00FFCC";
-
       const payload = {
         system: {
           power_on: globalPower,
@@ -80,6 +80,40 @@ export default function Dashboard({ globalPower }: { globalPower: boolean }) {
     <div
       className={`space-y-8 transition-opacity duration-300 ${!globalPower ? "opacity-50 pointer-events-none" : "opacity-100"}`}
     >
+      {/* Live Preview */}
+      <section className="bg-zinc-900/50 border border-zinc-800/50 rounded-3xl p-5 shadow-[inset_0_2px_10px_rgba(0,0,0,0.2)]">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-medium text-zinc-300">Live Preview</h2>
+          <span className="text-xs font-mono text-zinc-500 capitalize">{activeMode}</span>
+        </div>
+        
+        <div 
+          className="h-12 w-full rounded-xl overflow-hidden flex items-center justify-center relative shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] bg-zinc-950"
+          style={{
+            "--theme-color": themeColor,
+            "--breathe-min": breatheMinBrightness / 100,
+            "--breathe-max": breatheMaxBrightness / 100,
+            "--breathe-duration": `${3 / breatheSpeed}s`,
+            "--rainbow-duration": `${3 / rainbowSpeed}s`,
+            "--strobe-duration": `${60 / rpm}s`,
+            opacity: globalPower ? brightness / 100 : 0,
+          } as React.CSSProperties}
+        >
+          {activeMode === "solid" && (
+            <div className="w-full h-full transition-colors duration-300" style={{ backgroundColor: themeColor, boxShadow: `0 0 20px ${themeColor}80` }} />
+          )}
+          {activeMode === "breathe" && (
+            <div className="w-full h-full animate-breathe" style={{ backgroundColor: themeColor, boxShadow: `0 0 20px ${themeColor}80` }} />
+          )}
+          {activeMode === "rainbow" && (
+            <div className="w-full h-full animate-rainbow" />
+          )}
+          {activeMode === "strobe" && (
+            <div className="w-full h-full animate-strobe" />
+          )}
+        </div>
+      </section>
+
       {/* Mode Selection */}
       <section>
         <h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-widest mb-4">

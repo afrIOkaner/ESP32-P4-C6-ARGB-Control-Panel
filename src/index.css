@@ -11,6 +11,33 @@
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
   }
+  
+  .animate-breathe {
+    animation: preview-breathe var(--breathe-duration, 2s) ease-in-out infinite;
+  }
+  .animate-rainbow {
+    background: linear-gradient(90deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+    background-size: 200% 100%;
+    animation: rainbow-shift var(--rainbow-duration, 2s) linear infinite;
+  }
+  .animate-strobe {
+    animation: preview-strobe var(--strobe-duration, 0.1s) steps(1) infinite;
+  }
+}
+
+@keyframes preview-breathe {
+  0%, 100% { opacity: var(--breathe-min, 0.2); }
+  50% { opacity: var(--breathe-max, 1); }
+}
+
+@keyframes rainbow-shift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: -200% 50%; }
+}
+
+@keyframes preview-strobe {
+  0%, 49% { background-color: var(--theme-color, #ff003c); }
+  50%, 100% { background-color: #ffffff; }
 }
 
 body {

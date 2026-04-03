@@ -1,4 +1,4 @@
-# ARGB Web Control Panel (ESP32-C6)
+# ARGB Web Control Panel (ESP32-P4+C6)
 
 A mobile-first, interactive Single Page Application (SPA) designed to manage a custom PC ARGB lighting system. This UI is built to be hosted directly on a highly capable ESP32 microcontroller (specifically the JC-ESP32P4-M3-DEV board with ESP32-C6, 32M PSRAM, and 16M Flash).
 
